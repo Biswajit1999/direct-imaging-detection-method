@@ -27,6 +27,7 @@ import matplotlib.pyplot as plt
 import scienceplots  # noqa: F401 (registers 'science' style)
 import numpy as np
 from scipy.ndimage import rotate
+from scipy.stats import norm, t as student_t
 
 plt.style.use(["science", "no-latex"])
 
@@ -65,14 +66,26 @@ def aperture_photometry(image: np.ndarray, sep_px: float, pa_deg: float, radius_
     return image[mask].sum()
 
 
-def annulus_noise(image: np.ndarray, sep_px: float, exclude_pa_deg: float, radius_px: float = 4.0, n_apertures: int = 12) -> float:
+def annulus_noise(image: np.ndarray, sep_px: float, exclude_pa_deg: float, radius_px: float = 4.0, n_apertures: int = 12) -> tuple[float, int]:
     fluxes = []
     for k in range(n_apertures):
         pa = k * 360.0 / n_apertures
         if abs(((pa - exclude_pa_deg + 180) % 360) - 180) < 30:
             continue
         fluxes.append(aperture_photometry(image, sep_px, pa, radius_px))
-    return float(np.std(fluxes))
+    return float(np.std(fluxes)), len(fluxes)
+
+
+def small_sample_sigma_factor(sigma_level: float, n_independent: int) -> float:
+    """Mawet et al. (2014): a naive Gaussian sigma threshold overstates
+    confidence when the annulus only contains a handful of independent
+    noise samples. This corrects the multiplier by replacing the Gaussian
+    quantile with the equivalent Student-t quantile for n_independent - 1
+    degrees of freedom, scaled by sqrt(1 + 1/n_independent) for the
+    finite-sample penalty (their Eq. 9-10)."""
+    p_two_sided = 2 * (1 - norm.cdf(sigma_level))
+    t_crit = student_t.ppf(1 - p_two_sided / 2, df=max(n_independent - 1, 1))
+    return t_crit * np.sqrt(1 + 1.0 / n_independent)
 
 
 def main() -> None:
@@ -98,22 +111,32 @@ def main() -> None:
     derotated = np.array([rotate(residuals[i], -rotation_angles[i], reshape=False, order=1) for i in range(N_FRAMES)])
     adi_final = np.mean(derotated, axis=0)
 
-    raw_snr = aperture_photometry(frames[0] - star_psf, COMPANION_SEP_PX, COMPANION_PA0_DEG) / annulus_noise(frames[0] - star_psf, COMPANION_SEP_PX, COMPANION_PA0_DEG)
+    # Normalize by the star's own aperture flux (through the same aperture
+    # used for the companion) so noise-vs-flux comparisons are a true
+    # dimensionless contrast, not raw pixel-sum units.
+    star_aperture_flux = aperture_photometry(star_psf, 0, 0, radius_px=4.0)
+
+    raw_noise, _ = annulus_noise(frames[0] - star_psf, COMPANION_SEP_PX, COMPANION_PA0_DEG)
+    raw_snr = aperture_photometry(frames[0] - star_psf, COMPANION_SEP_PX, COMPANION_PA0_DEG) / raw_noise
     adi_flux = aperture_photometry(adi_final, COMPANION_SEP_PX, COMPANION_PA0_DEG)
-    adi_noise = annulus_noise(adi_final, COMPANION_SEP_PX, COMPANION_PA0_DEG)
+    adi_noise, n_indep = annulus_noise(adi_final, COMPANION_SEP_PX, COMPANION_PA0_DEG)
     adi_snr = adi_flux / adi_noise
 
     injected_flux = aperture_photometry(gaussian_psf(COMPANION_SEP_PX, COMPANION_PA0_DEG, COMPANION_CONTRAST), COMPANION_SEP_PX, COMPANION_PA0_DEG)
     flux_recovery_pct = adi_flux / injected_flux * 100
 
-    # Simple 5-sigma contrast curve vs separation from the ADI-reduced image.
+    # 5-sigma-equivalent contrast curve vs separation from the ADI-reduced
+    # image, normalized to the star's own aperture flux and corrected for
+    # the small number of independent noise samples at each separation
+    # (Mawet et al. 2014) rather than a flat Gaussian "5 x noise".
     seps = np.arange(8, 55, 2)
     contrast_5sigma = []
     for s in seps:
         # Exclude the injected companion's own position angle so its real
         # flux doesn't bias the noise-floor estimate at its own separation.
-        noise = annulus_noise(adi_final, s, exclude_pa_deg=COMPANION_PA0_DEG)
-        contrast_5sigma.append(5 * noise)
+        noise, n_apertures_here = annulus_noise(adi_final, s, exclude_pa_deg=COMPANION_PA0_DEG)
+        factor = small_sample_sigma_factor(5.0, n_apertures_here)
+        contrast_5sigma.append(factor * noise / star_aperture_flux)
 
     summary_path = FIG_DIR / "summary_statistics.csv"
     with summary_path.open("w", newline="") as handle:
@@ -124,6 +147,8 @@ def main() -> None:
         writer.writerow(["adi_reduced_snr", f"{adi_snr:.2f}", "sigma"])
         writer.writerow(["snr_improvement_factor", f"{adi_snr/raw_snr:.2f}", "x"])
         writer.writerow(["recovered_flux_fraction", f"{flux_recovery_pct:.1f}", "percent of injected"])
+        writer.writerow(["contrast_curve_n_independent_at_companion_sep", n_indep, "count (used for small-sample correction)"])
+        writer.writerow(["contrast_5sigma_at_companion_sep", f"{contrast_5sigma[np.argmin(np.abs(seps-COMPANION_SEP_PX))]:.2e}", "planet/star flux ratio, small-sample-corrected"])
 
     fig, axes = plt.subplots(1, 3, figsize=(14, 4.4))
 
@@ -142,8 +167,8 @@ def main() -> None:
     axes[2].axvline(COMPANION_SEP_PX, color="#999", ls=":", lw=1)
     axes[2].set_yscale("log")
     axes[2].set_xlabel("Separation [pixels]")
-    axes[2].set_ylabel("5σ contrast limit")
-    axes[2].set_title("ADI contrast curve")
+    axes[2].set_ylabel("5σ contrast limit (planet/star flux ratio)")
+    axes[2].set_title("ADI contrast curve\n(small-sample corrected)")
     axes[2].legend(fontsize=7)
     axes[2].grid(alpha=0.25)
 
@@ -156,6 +181,7 @@ def main() -> None:
     print(f"Raw single-frame SNR: {raw_snr:.2f} sigma")
     print(f"ADI-reduced SNR: {adi_snr:.2f} sigma ({adi_snr/raw_snr:.2f}x improvement)")
     print(f"Recovered flux: {flux_recovery_pct:.1f}% of injected")
+    print(f"5-sigma contrast at companion separation ({n_indep} independent apertures, small-sample corrected): {contrast_5sigma[np.argmin(np.abs(seps-COMPANION_SEP_PX))]:.2e}")
 
 
 if __name__ == "__main__":

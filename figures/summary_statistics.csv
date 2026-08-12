@@ -4,3 +4,5 @@ raw_single_frame_snr,0.73,sigma
 adi_reduced_snr,38.76,sigma
 snr_improvement_factor,53.38,x
 recovered_flux_fraction,88.3,percent of injected
+contrast_curve_n_independent_at_companion_sep,10,count (used for small-sample correction)
+contrast_5sigma_at_companion_sep,1.86e-04,"planet/star flux ratio, small-sample-corrected"
