@@ -113,7 +113,7 @@ pip install -r requirements.txt
 python scripts/direct_imaging_demo.py
 ```
 
-## Worked example with a real target
+## Sanity check against a real target's published parameters
 
 HR 8799 b, one of the first planets ever directly imaged (Marois et
 al. 2008), separates the two challenges from "The physics" above
@@ -121,7 +121,10 @@ cleanly. Its real measured angular separation is 1.713 arcseconds at a
 distance of 39.4 parsecs — a physical separation of about 67 AU. The
 discovery used Keck (10 m primary mirror) and Gemini North (8 m) in
 the near-infrared H band (1.6 microns); the diffraction limit for a
-10 m telescope there is:
+10 m telescope there, using the standard Rayleigh-criterion convention
+(the factor of 1.22 is specifically for resolving two point sources
+with a circular aperture, not a universal constant — see "The physics"
+above), is:
 
 ```
 theta = 1.22 * lambda / D
@@ -130,13 +133,19 @@ theta = 1.22 * lambda / D
 ```
 
 The real separation (1.71 arcsec) is roughly 40 times larger than that
-diffraction limit — for this particular planet, at this separation,
-resolution was never the bottleneck. What made the detection hard
-was contrast: HR 8799 b is roughly $10^{-5}$ times fainter than its
-star in the near-infrared, well into the regime where quasi-static
-speckle noise, not the diffraction limit, sets the real detection
-floor, which is exactly the problem ADI (used in this repo's
-simulation) was built to solve.
+diffraction limit, so diffraction-limited angular resolution alone was
+not what made this particular detection hard at this particular
+separation. That's a narrower claim than saying resolution is never a
+factor in direct imaging generally: a coronagraph's inner working
+angle, residual uncorrected starlight, and achievable contrast all
+still set real limits on detectability even for well-separated
+companions, and closer-in planets routinely are blocked by exactly
+these factors regardless of the raw diffraction limit. For HR 8799 b
+specifically, what made the detection hard was contrast: it's roughly
+$10^{-5}$ times fainter than its star in the near-infrared, well into
+the regime where quasi-static speckle noise, not the diffraction
+limit, sets the real detection floor, which is exactly the problem ADI
+(used in this repo's simulation) was built to solve.
 
 ## Result
 
