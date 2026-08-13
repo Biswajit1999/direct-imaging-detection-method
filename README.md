@@ -99,9 +99,12 @@ exoplanet population.
 4. Computes a 5-sigma contrast curve versus separation, normalized to
    the star's own aperture flux (so it's a genuine dimensionless
    contrast, comparable directly to the injected value) and corrected
-   for the small number of independent noise samples available in a
-   narrow annulus close to the star (Mawet et al. 2014) rather than
-   assuming a flat Gaussian threshold everywhere.
+   for the number of independent noise samples actually available at
+   each separation (Mawet et al. 2014). The number of independent
+   apertures is derived from geometry — annulus circumference divided
+   by the aperture diameter — rather than fixed, so it correctly
+   shrinks close to the star and grows further out, rather than
+   assuming the same sample count everywhere.
 
 Run it yourself:
 
@@ -140,19 +143,18 @@ simulation) was built to solve.
 | Quantity | Value |
 |---|---|
 | Injected contrast | 6.0×10⁻⁴ |
-| Raw single-frame SNR | 0.73σ — not detectable |
-| ADI-reduced SNR | 38.8σ — clear detection |
-| SNR improvement | 53.4x |
+| Raw single-frame SNR | 0.64σ — not detectable |
+| ADI-reduced SNR | 27.0σ — clear detection |
+| SNR improvement | 42.2x |
 | Recovered flux | 88.3% of injected |
-| 5σ contrast limit at the companion's separation | 1.9×10⁻⁴ (10 independent apertures) |
+| 5σ contrast limit at the companion's separation | 1.5×10⁻⁴ (23 independent apertures) |
 
-In a single raw frame the companion is buried in speckle noise (0.73σ —
+In a single raw frame the companion is buried in speckle noise (0.64σ —
 indistinguishable from a random fluctuation). After ADI reduction it
-becomes an isolated point source at 38.8σ, and the injected contrast
-sits comfortably above the 5σ detection limit everywhere on the
-contrast curve — a quantified demonstration of why this technique, not
-longer integration time on its own, is what makes direct imaging of
-exoplanets practical.
+becomes an isolated point source at 27.0σ, and the injected contrast
+sits above the 5σ detection limit everywhere on the contrast curve — a
+quantified demonstration of why this technique, not longer integration
+time on its own, is what makes direct imaging of exoplanets practical.
 
 ## Limitations
 

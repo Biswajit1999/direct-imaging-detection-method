@@ -66,14 +66,28 @@ def aperture_photometry(image: np.ndarray, sep_px: float, pa_deg: float, radius_
     return image[mask].sum()
 
 
-def annulus_noise(image: np.ndarray, sep_px: float, exclude_pa_deg: float, radius_px: float = 4.0, n_apertures: int = 12) -> tuple[float, int]:
+def independent_apertures_at_separation(sep_px: float, radius_px: float = 4.0) -> int:
+    """Number of non-overlapping resolution elements that fit around the
+    annulus at this separation, using the aperture diameter (2 * radius_px,
+    a proxy for the PSF resolution element) as the angular spacing --
+    this is the separation-dependent quantity Mawet et al. (2014)'s
+    small-sample correction is actually about: fewer independent noise
+    samples close to the star, more further out, not a fixed count."""
+    return max(3, int(np.floor(2 * np.pi * sep_px / (2 * radius_px))))
+
+
+def annulus_noise(image: np.ndarray, sep_px: float, exclude_pa_deg: float, radius_px: float = 4.0) -> tuple[float, int]:
+    n_apertures = independent_apertures_at_separation(sep_px, radius_px)
     fluxes = []
     for k in range(n_apertures):
         pa = k * 360.0 / n_apertures
-        if abs(((pa - exclude_pa_deg + 180) % 360) - 180) < 30:
+        if abs(((pa - exclude_pa_deg + 180) % 360) - 180) < (360.0 / n_apertures):
             continue
         fluxes.append(aperture_photometry(image, sep_px, pa, radius_px))
-    return float(np.std(fluxes)), len(fluxes)
+    # Sample standard deviation (ddof=1): the Student-t small-sample
+    # correction in small_sample_sigma_factor() below assumes the noise
+    # estimate itself comes from a sample variance, not a population one.
+    return float(np.std(fluxes, ddof=1)), len(fluxes)
 
 
 def small_sample_sigma_factor(sigma_level: float, n_independent: int) -> float:
