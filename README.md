@@ -113,6 +113,20 @@ pip install -r requirements.txt
 python scripts/direct_imaging_demo.py
 ```
 
+## Tests
+
+`tests/test_direct_imaging.py` checks the PSF/aperture photometry
+against closed-form analytic integrals, verifies the independent-
+aperture count actually scales with separation (a regression guard —
+an earlier version used a fixed count of 12 everywhere), and confirms
+the Mawet et al. (2014) small-sample correction converges to the plain
+Gaussian threshold for large sample counts while penalizing small ones.
+Runs automatically on every push via GitHub Actions; run locally with:
+
+```bash
+pytest tests/ -v
+```
+
 ## Sanity check against a real target's published parameters
 
 HR 8799 b, one of the first planets ever directly imaged (Marois et
