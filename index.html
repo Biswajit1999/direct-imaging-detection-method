@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Direct Imaging — The Physics, the Numbers, and a Live Calculator</title>
+<meta name="description" content="A working reference on direct-imaging exoplanet detection: the contrast and angular-resolution physics, worked numerical examples including HR 8799 b, real detection statistics, and an interactive calculator built on the actual equations.">
+<style>
+:root {
+  --bg:#f6f7f9; --panel:#ffffff; --line:#dfe3e8; --text:#181c22; --muted:#5c6470;
+  --accent:#a8501f; --accent-soft:#f6e8dc; --sans:"Inter","Segoe UI",system-ui,Arial,sans-serif;
+  --mono:"IBM Plex Mono","Roboto Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg:#181310; --panel:#201a16; --line:#332821; --text:#f1e6de; --muted:#af9a8a; --accent:#e89a5f; --accent-soft:#332217; }
+}
+* { box-sizing: border-box; }
+html,body { margin:0; background:var(--bg); color:var(--text); font-family:var(--sans); }
+.wrap { max-width: 980px; margin: 0 auto; padding: 3rem 1.5rem 5rem; }
+header.hero { border-bottom: 1px solid var(--line); padding-bottom: 2rem; margin-bottom: 2rem; }
+.kicker { color: var(--accent); font: 600 .75rem var(--mono); letter-spacing: .12em; text-transform: uppercase; margin: 0 0 .8rem; }
+h1 { font-size: clamp(2rem, 5vw, 2.9rem); margin: 0 0 .6rem; letter-spacing: -.02em; }
+.tagline { color: var(--muted); font-size: 1.1rem; max-width: 720px; margin: 0; }
+.badges { display:flex; gap:.5rem; margin-top: 1.2rem; flex-wrap: wrap; }
+.badge { font: 600 .68rem var(--mono); background: var(--accent-soft); color: var(--accent); padding: .3rem .6rem; border-radius: 5px; }
+nav.toc { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1rem 1.4rem; margin: 2rem 0; }
+nav.toc h2 { font-size: .8rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 0 0 .7rem; }
+nav.toc ol { margin: 0; padding-left: 1.2rem; columns: 2; column-gap: 2rem; font-size: .92rem; }
+nav.toc li { margin-bottom: .4rem; }
+nav.toc a { color: var(--text); text-decoration: none; }
+nav.toc a:hover { color: var(--accent); }
+section { margin: 3rem 0; scroll-margin-top: 1.5rem; }
+h2 { font-size: 1.5rem; margin: 0 0 1rem; letter-spacing: -.01em; }
+h3 { font-size: 1.1rem; margin: 1.6rem 0 .6rem; }
+p { line-height: 1.75; }
+.muted { color: var(--muted); }
+.eq { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1rem 1.4rem; margin: 1rem 0; overflow-x: auto; }
+.eq p { margin: 0; text-align: center; font-family: var(--mono); font-size: 1.05rem; }
+table { width: 100%; border-collapse: collapse; font-size: .92rem; margin: 1rem 0; }
+th, td { text-align: left; padding: .6rem .7rem; border-bottom: 1px solid var(--line); }
+th { color: var(--muted); font-weight: 600; }
+.figure { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1rem; margin: 1.2rem 0; }
+.figure img { width: 100%; height: auto; border-radius: 6px; }
+.figure figcaption { color: var(--muted); font-size: .85rem; margin-top: .6rem; }
+.callout { background: var(--accent-soft); border-left: 3px solid var(--accent); padding: 1rem 1.2rem; border-radius: 6px; font-size: .93rem; }
+.calc { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 1.6rem; margin: 1.4rem 0; }
+.calc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); gap: 1.4rem 2rem; }
+.field { margin-bottom: .3rem; }
+.field label { display: flex; justify-content: space-between; font: 600 .82rem var(--mono); color: var(--muted); margin-bottom: .4rem; }
+.field label span.val { color: var(--accent); }
+.field input[type=range] { width: 100%; accent-color: var(--accent); }
+.calc-results { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap: .8rem; margin-top: 1.6rem; border-top: 1px solid var(--line); padding-top: 1.4rem; }
+.result { background: var(--accent-soft); border-radius: 10px; padding: .9rem 1rem; }
+.result span { display:block; color: var(--muted); font-size: .68rem; text-transform: uppercase; letter-spacing: .06em; margin-bottom: .3rem; }
+.result strong { font: 700 1.3rem var(--mono); color: var(--accent); display:block; }
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: .8rem; margin: 1.2rem 0; }
+.stat { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: .9rem 1rem; }
+.stat span { display:block; color: var(--muted); font-size: .68rem; text-transform: uppercase; letter-spacing: .06em; margin-bottom: .3rem; }
+.stat strong { font: 700 1.25rem var(--mono); color: var(--accent); }
+ol.refs { padding-left: 1.2rem; color: var(--muted); font-size: .92rem; line-height: 1.7; }
+ol.refs li { margin-bottom: .5rem; }
+a { color: var(--accent); }
+code { background: var(--accent-soft); padding: .1rem .35rem; border-radius: 4px; font-size: .88em; }
+footer { border-top: 1px solid var(--line); margin-top: 3rem; padding-top: 1.5rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; color: var(--muted); font-size: .85rem; }
+footer nav { display: flex; gap: 1.2rem; flex-wrap: wrap; }
+footer a { color: var(--muted); text-decoration: none; }
+footer a:hover { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <p class="kicker">Exoplanet Detection Methods · Direct Imaging</p>
+    <h1>Direct Imaging</h1>
+    <p class="tagline">The only method that produces an actual picture of a planet: resolving its light as a separate point source next to its host star. This page derives the contrast and angular-resolution physics from first principles, works through real numbers including HR 8799 b, reports current detection statistics, and includes a live calculator built on the same equations.</p>
+    <div class="badges">
+      <span class="badge">~2% of all confirmed exoplanets</span>
+      <span class="badge">HR 8799 · Beta Pictoris b</span>
+      <span class="badge">Real ADI pipeline implemented in this repo</span>
+    </div>
+  </header>
+
+  <nav class="toc">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#twoproblems">1. Two problems at once</a></li>
+      <li><a href="#speckles">2. Why speckles, not just diffraction, set the floor</a></li>
+      <li><a href="#adi">3. How ADI tells a planet from a speckle</a></li>
+      <li><a href="#why">4. Why this method matters</a></li>
+      <li><a href="#examples">5. Worked numerical examples</a></li>
+      <li><a href="#calculator">6. Interactive calculator</a></li>
+      <li><a href="#statistics">7. Real detection statistics</a></li>
+      <li><a href="#pipeline">8. How a real search finds a signal</a></li>
+      <li><a href="#limitations">9. Limitations and open problems</a></li>
+      <li><a href="#references">10. References</a></li>
+    </ol>
+  </nav>
+
+  <section id="twoproblems">
+    <h2>1. Two problems at once</h2>
+    <p>Direct imaging faces two combined challenges that both have to be overcome simultaneously. The first is <strong>contrast</strong>: a Jupiter-mass planet is roughly 10⁻⁴ to 10⁻⁹ times fainter than its star, depending on the planet's age (younger giant planets are still glowing from formation and are far brighter in the infrared) and observing wavelength. The second is <strong>angular separation</strong>: most known planets sit far too close to their star to be resolved from typical interstellar distances. The angular separation of a planet at 1 AU seen from 10 parsecs is only 0.1 arcseconds — comparable to, or smaller than, the diffraction limit of even a large telescope at visible wavelengths.</p>
+    <p>The two problems trade off against each other: a wide-orbit planet is easier to separate from its star angularly, but is usually fainter in absolute terms too, since it intercepts less starlight and formed farther from the heat of formation. That tension is why direct imaging's best targets are young, wide-orbit, self-luminous giant planets — not, in general, the close-in rocky planets covered by transit and radial-velocity surveys.</p>
+    <h3>The diffraction limit</h3>
+    <p>For a circular aperture, the smallest angle a telescope can in principle resolve between two point sources (the Rayleigh criterion) is:</p>
+    <div class="eq"><p>θ = 1.22 · λ / D</p></div>
+    <p>where λ is the observing wavelength and D is the telescope's aperture diameter. The factor 1.22 is specific to resolving two point sources with a circular aperture — not a universal constant — and this is a hard geometric floor set by the wave nature of light, independent of any imperfection in the optics.</p>
+  </section>
+
+  <section id="speckles">
+    <h2>2. Why speckles, not just diffraction, set the floor</h2>
+    <p>A telescope's diffraction pattern (the Airy pattern, for a circular aperture) sets that hard geometric limit on angular resolution, but real high-contrast imaging is usually limited by something else entirely. Adaptive optics correct atmospheric turbulence in real time, but leave behind residual, slowly evolving <strong>"quasi-static" speckles</strong> — small imperfections in the optics and imperfect AO correction that produce a mottled pattern of bright and dark spots across the field, each one looking exactly like a faint point source would. These speckles evolve on minutes-to-hours timescales, as temperature and mechanical flexure shift the optics slightly, and typically dominate over ordinary photon noise at the separations where planets are actually found. That's precisely why simply integrating longer doesn't help much on its own: unlike photon noise, which averages down as the square root of exposure time, speckle noise doesn't average down the same way, because it isn't statistically random from exposure to exposure — it's a real, structured, slowly-changing pattern.</p>
+  </section>
+
+  <section id="adi">
+    <h2>3. How ADI tells a planet from a speckle</h2>
+    <p><strong>Angular Differential Imaging</strong> (Marois et al. 2006) exploits geometry to break the degeneracy between a real companion and a speckle. On an alt-az telescope with the image derotator switched off (or deliberately disabled), the sky appears to rotate around the field center over the course of a night while the telescope's own optics — and their speckle pattern — stay fixed relative to the detector. A real companion, fixed on the sky, traces an arc across the detector as the field rotates; the speckles don't move at all.</p>
+    <p>The algorithm: build a reference image from the sequence (the simplest version is just the median of all frames), which captures the star and its speckles well since they're present in every frame in the same detector position, while the companion is smeared across many different positions and contributes little to the median. Subtract that reference from each individual frame, and what's left is mostly the moving companion signal sitting on a much fainter residual noise floor. De-rotating each residual frame back to a common sky orientation before combining them makes the companion's signal add up coherently across the sequence, while the leftover speckle residue — no longer at a fixed detector position after de-rotation — partially cancels.</p>
+  </section>
+
+  <section id="why">
+    <h2>4. Why this method matters</h2>
+    <p>Direct imaging is the only technique that yields a planet's own light directly: its spectrum, its temperature, and sometimes its resolved orbital motion measured over years — all without needing a fortunate transit alignment or a large reflex velocity to detect. It works best for young, still-warm, self-luminous giant planets on wide orbits: systems like <strong>HR 8799</strong> (four imaged giant planets) and <strong>Beta Pictoris b</strong> were found and characterized this way. It remains the main way to study a planet's atmosphere independent of transmission or emission spectroscopy during transit — and the only method that directly measures orbital motion on the sky rather than inferring the orbit from a time-series signal.</p>
+    <p class="callout">The tradeoff: direct imaging is strongly biased toward young (hot, still glowing from formation), massive, wide-separation planets around nearby stars. It is currently close to blind to older, cooler, close-in planets — like most of the archival JWST/HST targets covered elsewhere in this portfolio — which is exactly why transit and radial-velocity spectroscopy remain necessary for characterizing the bulk of the known exoplanet population.</p>
+  </section>
+
+  <section id="examples">
+    <h2>5. Worked numerical examples</h2>
+    <h3>HR 8799 b: separating the two challenges</h3>
+    <p>One of the first planets ever directly imaged (Marois et al. 2008) cleanly separates the two challenges from Section 1. Its real measured angular separation is 1.713 arcseconds at a distance of 39.4 parsecs — a physical separation of about 67 AU (angular separation in arcseconds simply equals physical separation in AU divided by distance in parsecs, by the definition of the parsec). The discovery used Keck (10 m primary mirror) and Gemini North (8 m) in the near-infrared H band (1.6 microns); the diffraction limit for a 10 m telescope there is:</p>
+    <div class="eq"><code>θ = 1.22 × λ / D
+  = 1.22 × 1.6×10⁻⁶ m / 10 m
+  = 1.95×10⁻⁷ rad = 0.040 arcsec</code></div>
+    <p>The real separation (1.71 arcsec) is roughly 40 times larger than that diffraction limit, so diffraction-limited angular resolution alone was not what made this particular detection hard at this particular separation. That's a narrower claim than saying resolution is never a factor in direct imaging generally: a coronagraph's inner working angle, residual uncorrected starlight, and achievable contrast all still set real limits on detectability even for well-separated companions, and closer-in planets routinely are blocked by exactly these factors regardless of the raw diffraction limit. For HR 8799 b specifically, what made the detection hard was <strong>contrast</strong>: it's roughly 10⁻⁵ times fainter than its star in the near-infrared — well into the regime where quasi-static speckle noise, not the diffraction limit, sets the real detection floor, which is exactly the problem ADI was built to solve.</p>
+  </section>
+
+  <section id="calculator">
+    <h2>6. Interactive calculator</h2>
+    <p>Move the sliders below. The outputs are computed live, directly from the angular-separation and diffraction-limit equations in Sections 1 and 5 — nothing here is looked up or pre-baked.</p>
+    <div class="calc">
+      <div class="calc-grid">
+        <div class="field">
+          <label>Physical separation <span class="val" id="aVal">67.5 AU</span></label>
+          <input type="range" id="a" min="1" max="300" step="0.5" value="67.5">
+        </div>
+        <div class="field">
+          <label>Distance to system <span class="val" id="dVal">39.4 pc</span></label>
+          <input type="range" id="d" min="1.3" max="200" step="0.1" value="39.4">
+        </div>
+        <div class="field">
+          <label>Telescope aperture <span class="val" id="diamVal">10.0 m</span></label>
+          <input type="range" id="diam" min="0.5" max="39" step="0.1" value="10.0">
+        </div>
+        <div class="field">
+          <label>Observing wavelength <span class="val" id="lambdaVal">1.60 µm</span></label>
+          <input type="range" id="lambda" min="0.4" max="5" step="0.01" value="1.6">
+        </div>
+        <div class="field">
+          <label>Planet/star contrast (log₁₀) <span class="val" id="contrastVal">1.0×10⁻⁵</span></label>
+          <input type="range" id="logcontrast" min="-9" max="-3" step="0.1" value="-5">
+        </div>
+      </div>
+      <div class="calc-results">
+        <div class="result"><span>Angular separation</span><strong id="outSep">–</strong></div>
+        <div class="result"><span>Diffraction limit (1.22λ/D)</span><strong id="outDiff">–</strong></div>
+        <div class="result"><span>Separation / diffraction limit</span><strong id="outRatio">–</strong></div>
+        <div class="result"><span>Contrast, magnitudes</span><strong id="outMag">–</strong></div>
+      </div>
+      <p class="callout" id="calcNote" style="margin-top:1.2rem;"></p>
+    </div>
+    <p class="muted" style="font-size:.85rem;">Angular separation uses θ [arcsec] = a [AU] / d [pc], exact by the definition of the parsec. Diffraction limit uses the Rayleigh criterion from Section 1. Contrast in magnitudes uses Δm = −2.5·log₁₀(contrast), the standard astronomical convention.</p>
+  </section>
+
+  <section id="statistics">
+    <h2>7. Real detection statistics</h2>
+    <p>Pulled live from the NASA Exoplanet Archive's confirmed-planet counts by discovery method, accessed 2026-08-14:</p>
+    <div class="stat-grid">
+      <div class="stat"><span>Total confirmed</span><strong>6,336</strong></div>
+      <div class="stat"><span>Via direct imaging</span><strong>98 (~2%)</strong></div>
+      <div class="stat"><span>Via transit</span><strong>4,676 (~74%)</strong></div>
+      <div class="stat"><span>Via radial velocity</span><strong>1,197 (~19%)</strong></div>
+      <div class="stat"><span>Via microlensing</span><strong>282 (~4%)</strong></div>
+    </div>
+    <p>Direct imaging is the least numerically productive of the four major detection methods, but for a structural reason rather than a technological one: it is fundamentally biased toward a narrow, rare demographic — young, massive, wide-separation, self-luminous giant planets around nearby stars — while transit and radial velocity are far better matched to the close-in planets that are both more common by orbital-period selection effects and easier to detect with those methods. What direct imaging lacks in count it makes up in what it uniquely reveals: real spectra, real photometry across multiple wavelengths, and in a growing number of systems, real orbital motion measured directly on the sky over successive years of observation — data no other detection method can provide.</p>
+  </section>
+
+  <div class="figure">
+    <img src="figures/adi_recovery.png" alt="Angular Differential Imaging reduction showing companion recovery and contrast curve from this repo's own injection-recovery test">
+    <figcaption>Output of this repo's own <code>scripts/direct_imaging_demo.py</code>: raw single-frame vs. ADI-reduced detection significance, and a calibrated 5σ contrast curve corrected for small-sample statistics. See Section 8.</figcaption>
+  </div>
+
+  <section id="pipeline">
+    <h2>8. How a real search finds a signal</h2>
+    <p>This repository implements a full Angular Differential Imaging reduction from scratch in Python:</p>
+    <ol>
+      <li>Simulates a 30-frame ADI sequence: a fixed stellar point-spread function plus a quasi-static speckle pattern at a realistic amplitude, with a faint injected companion at a young-giant-planet-like contrast (6×10⁻⁴) whose position angle rotates with the sky across 90 degrees of parallactic-angle coverage while the speckles stay fixed on the detector.</li>
+      <li>Builds a reference PSF from the median of all frames, subtracts it from each frame, de-rotates each residual to align the sky, and combines them — the ADI algorithm from Marois et al. (2006), described in Section 3.</li>
+      <li>Measures the companion's detection significance via aperture photometry against an annulus noise estimate, comparing a single raw frame against the final ADI-reduced image.</li>
+      <li>Computes a 5σ contrast curve versus separation, normalized to the star's own aperture flux (a genuine dimensionless contrast, directly comparable to the injected value) and corrected for the number of independent noise samples actually available at each separation (Mawet et al. 2014). The number of independent apertures is derived from geometry — annulus circumference divided by aperture diameter — rather than fixed, so it correctly shrinks close to the star and grows further out.</li>
+    </ol>
+    <p>The result from this repo's own run:</p>
+    <table>
+      <tr><th>Quantity</th><th>Value</th></tr>
+      <tr><td>Injected contrast</td><td>6.0×10⁻⁴</td></tr>
+      <tr><td>Raw single-frame SNR</td><td>0.64σ — not detectable</td></tr>
+      <tr><td>ADI-reduced SNR</td><td>27.0σ — clear detection</td></tr>
+      <tr><td>SNR improvement</td><td>42.2×</td></tr>
+      <tr><td>Recovered flux</td><td>88.3% of injected</td></tr>
+      <tr><td>5σ contrast limit at the companion's separation</td><td>1.5×10⁻⁴ (23 independent apertures)</td></tr>
+    </table>
+    <p>In a single raw frame the companion is buried in speckle noise (0.64σ — indistinguishable from a random fluctuation). After ADI reduction it becomes an isolated point source at 27.0σ, and the injected contrast sits above the 5σ detection limit everywhere on the contrast curve — a quantified demonstration of why this technique, not longer integration time on its own, is what makes direct imaging of exoplanets practical. Run it yourself: <code>pip install -r requirements.txt &amp;&amp; python scripts/direct_imaging_demo.py</code>. Tests in <code>tests/test_direct_imaging.py</code> run automatically on every push via GitHub Actions.</p>
+  </section>
+
+  <section id="limitations">
+    <h2>9. Limitations and open problems</h2>
+    <p>The contrast curve in this repo shows a documented ADI artifact: elevated noise right around the companion's own separation, caused by <strong>self-subtraction</strong> — with only 90 degrees of parallactic-angle rotation, the companion's own signal partially contaminates the median reference frame and leaves negative "side lobes" near its true position (Milli et al. 2012). That's not a bug; it's a real limitation of ADI with limited field rotation, and real observing sequences are often planned specifically to maximize parallactic-angle coverage to reduce it. Separately, the quasi-static speckle field in this simulation is a static Gaussian-random texture rather than a correlated, slowly evolving PSF residual, and algorithmic throughput — how much real companion flux ADI itself removes through self-subtraction, beyond what this repo's 88.3%-recovery number already shows — isn't independently calibrated via fake-planet injection at multiple separations, which a published contrast curve would do.</p>
+    <p class="callout">A natural next step: inject fake companions at a grid of separations and position angles, run the same pipeline on each, and use the fraction of flux recovered at each point as an empirical throughput correction for the contrast curve — standard practice in real high-contrast imaging pipelines. You could also replace the median-combination reference PSF with a more capable algorithm like KLIP (Karhunen-Loève Image Projection, Soummer et al. 2012) or LOCI (Lafrenière et al. 2007), both of which build a smarter reference from a weighted combination of the other frames and typically recover more companion flux at fixed self-subtraction — implemented in real pipelines such as <code>pyKLIP</code>.</p>
+  </section>
+
+  <section id="references">
+    <h2>10. References</h2>
+    <ol class="refs">
+      <li>Marois, C. et al., 2006. Angular Differential Imaging: A Powerful High-Contrast Imaging Technique. <em>The Astrophysical Journal</em>, 641(1), pp.556-564.</li>
+      <li>Marois, C. et al., 2008. Direct Imaging of Multiple Planets Orbiting the Star HR 8799. <em>Science</em>, 322(5906), pp.1348-1352.</li>
+      <li>Chauvin, G. et al., 2004. A giant planet candidate near a young brown dwarf. <em>Astronomy &amp; Astrophysics</em>, 425(2), L29-L32.</li>
+      <li>Milli, J. et al., 2012. Impact of angular differential imaging on circumstellar disk images. <em>Astronomy &amp; Astrophysics</em>, 545, A111 — self-subtraction bias in ADI.</li>
+      <li>Mawet, D. et al., 2014. Fundamental Limitations of High Contrast Imaging Set by Small Sample Statistics. <em>The Astrophysical Journal</em>, 792(2), 97.</li>
+      <li>Soummer, R., Pueyo, L. and Larkin, J., 2012. Detection and Characterization of Exoplanets and Disks Using Projections on Karhunen-Loeve Eigenimages. <em>The Astrophysical Journal Letters</em>, 755(2), L28.</li>
+      <li>NASA Exoplanet Archive confirmed-planet counts by discovery method, <a href="https://exoplanetarchive.ipac.caltech.edu/docs/counts_detail.html">exoplanetarchive.ipac.caltech.edu</a> — accessed 2026-08-14.</li>
+      <li>NASA Exoplanet Archive, <a href="https://exoplanetarchive.ipac.caltech.edu/">exoplanetarchive.ipac.caltech.edu</a>.</li>
+    </ol>
+  </section>
+
+  <footer>
+    <span>Biswajit Jana · Exoplanet Detection Methods Series</span>
+    <nav>
+      <a href="README.md">Full README</a>
+      <a href="https://biswajit1999.github.io/Biswajit_Jana.github.io/" target="_blank" rel="noopener">Portfolio</a>
+      <a href="https://github.com/Biswajit1999" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://www.linkedin.com/in/biswajit-jana-27011a151/" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="https://orcid.org/0009-0002-2411-1891" target="_blank" rel="noopener">ORCID</a>
+    </nav>
+  </footer>
+</div>
+
+<script>
+(function() {
+  const RAD_PER_ARCSEC = Math.PI/(180*3600);
+
+  const a = document.getElementById('a'), d = document.getElementById('d'),
+        diam = document.getElementById('diam'), lambda = document.getElementById('lambda'),
+        logcontrast = document.getElementById('logcontrast');
+
+  const aVal = document.getElementById('aVal'), dVal = document.getElementById('dVal'),
+        diamVal = document.getElementById('diamVal'), lambdaVal = document.getElementById('lambdaVal'),
+        contrastVal = document.getElementById('contrastVal');
+
+  const outSep = document.getElementById('outSep'), outDiff = document.getElementById('outDiff'),
+        outRatio = document.getElementById('outRatio'), outMag = document.getElementById('outMag'),
+        calcNote = document.getElementById('calcNote');
+
+  function fmt(x, dd) { return Number(x).toFixed(dd); }
+
+  function compute() {
+    const a_AU = parseFloat(a.value), d_pc = parseFloat(d.value),
+          D_m = parseFloat(diam.value), lambda_um = parseFloat(lambda.value),
+          logc = parseFloat(logcontrast.value);
+
+    aVal.textContent = fmt(a_AU,1) + ' AU';
+    dVal.textContent = fmt(d_pc,1) + ' pc';
+    diamVal.textContent = fmt(D_m,1) + ' m';
+    lambdaVal.textContent = fmt(lambda_um,2) + ' µm';
+    const contrast = Math.pow(10, logc);
+    contrastVal.textContent = contrast.toExponential(1).replace('e-', '×10⁻').replace('+','');
+
+    const sep_arcsec = a_AU / d_pc;
+    const lambda_m = lambda_um * 1e-6;
+    const diff_rad = 1.22 * lambda_m / D_m;
+    const diff_arcsec = diff_rad / RAD_PER_ARCSEC;
+    const ratio = sep_arcsec / diff_arcsec;
+    const deltaMag = -2.5 * Math.log10(contrast);
+
+    outSep.textContent = fmt(sep_arcsec,3) + '"';
+    outDiff.textContent = fmt(diff_arcsec,4) + '"';
+    outRatio.textContent = fmt(ratio,1) + '×';
+    outMag.textContent = fmt(deltaMag,1) + ' mag';
+
+    let verdict;
+    if (ratio < 1) {
+      verdict = 'This separation is inside the diffraction limit — the planet cannot be resolved from its star at all with this aperture and wavelength, regardless of contrast.';
+    } else if (ratio < 3) {
+      verdict = 'This separation is only ' + fmt(ratio,1) + '× the diffraction limit — close to the resolution floor, where a coronagraph\'s inner working angle typically blocks detection even before contrast becomes the limiting factor.';
+    } else {
+      verdict = 'This separation is well outside the diffraction limit (' + fmt(ratio,1) + '× wider), so — as with HR 8799 b in Section 5 — angular resolution is not the bottleneck here; contrast (Δm ≈ ' + fmt(deltaMag,1) + ') and quasi-static speckle noise are what actually determine whether this companion is detectable.';
+    }
+    calcNote.textContent = verdict;
+  }
+
+  [a, d, diam, lambda, logcontrast].forEach(el => el.addEventListener('input', compute));
+  compute();
+})();
+</script>
+</body>
+</html>

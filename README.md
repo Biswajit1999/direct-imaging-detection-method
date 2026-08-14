@@ -9,6 +9,12 @@ recovering it — including a contrast curve calibrated in proper flux-
 ratio units with a correction for how few independent noise samples
 exist close to the star.
 
+**[Open the full interactive report](index.html)** — the same physics
+below, plus a worked HR 8799 b example, real detection statistics, and
+a live calculator built on the actual angular-separation and
+diffraction-limit equations (open locally in a browser, or serve with
+`python -m http.server` from this directory).
+
 ## The physics
 
 ### Two problems at once
@@ -71,6 +77,16 @@ luminous giant planets on wide orbits — systems like HR 8799 (four
 imaged giant planets) and Beta Pictoris b were found and characterized
 this way, and it remains the main way to study a planet's atmosphere
 independent of transmission or emission spectroscopy during transit.
+
+Per the NASA Exoplanet Archive's confirmed-planet counts by discovery
+method (accessed 2026-08-14), direct imaging accounts for 98 of 6,336
+confirmed exoplanets (~2%) — the least numerically productive of the
+four major methods (transit 4,676, ~74%; radial velocity 1,197, ~19%;
+microlensing 282, ~4%), for a structural reason rather than a
+technological one: it is fundamentally biased toward a narrow, rare
+demographic of young, massive, wide-separation, self-luminous giant
+planets, while the other methods are better matched to the close-in
+planets that dominate the census by selection effects.
 
 **Limitation:** direct imaging is strongly biased toward young (hot,
 still glowing from formation), massive, wide-separation planets around
