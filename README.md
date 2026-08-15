@@ -1,8 +1,10 @@
 # Direct Imaging — Exoplanet Detection Method
 
-<img src="images/hero.png" alt="Artist's concept of a directly imaged exoplanet next to its host star" width="360">
+<p align="center">
+  <img src="images/hero.png" alt="Artist's concept of a directly imaged exoplanet next to its host star" width="360">
+</p>
 
-*AI-generated artist's concept — not a real photograph. See the report for the real physics and detection statistics.*
+<p align="center"><em>AI-generated artist's concept — not a real photograph. See the report for the real physics and detection statistics.</em></p>
 
 The only method that produces an actual picture of a planet: resolve
 its light as a separate point source next to its host star. This repo
@@ -13,11 +15,7 @@ recovering it — including a contrast curve calibrated in proper flux-
 ratio units with a correction for how few independent noise samples
 exist close to the star.
 
-**[Open the full interactive report](index.html)** — the same physics
-below, plus a worked HR 8799 b example, real detection statistics, and
-a live calculator built on the actual angular-separation and
-diffraction-limit equations (open locally in a browser, or serve with
-`python -m http.server` from this directory).
+**[Open the full report](https://biswajit1999.github.io/direct-imaging-detection-method/)** — the live GitHub Pages version. You can also open `index.html` locally in a browser, or serve it with `python -m http.server` from this directory.
 
 ## The physics
 
