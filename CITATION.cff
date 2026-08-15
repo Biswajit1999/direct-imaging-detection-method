@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If you use this analysis or its code, please cite the repository and its archived data sources."
+title: "Direct Imaging Exoplanet Detection"
+type: software
+authors:
+  - family-names: Jana
+    given-names: Biswajit
+    orcid: https://orcid.org/0009-0002-2411-1891
+repository-code: https://github.com/Biswajit1999/direct-imaging-detection-method
+url: https://biswajit1999.github.io/direct-imaging-detection-method/
+license: MIT
