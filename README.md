@@ -1,5 +1,9 @@
 # Direct Imaging — Exoplanet Detection Method
 
+<img src="images/hero.png" alt="Artist's concept of a directly imaged exoplanet next to its host star" width="360">
+
+*AI-generated artist's concept — not a real photograph. See the report for the real physics and detection statistics.*
+
 The only method that produces an actual picture of a planet: resolve
 its light as a separate point source next to its host star. This repo
 works through the physics, implements an Angular Differential Imaging
