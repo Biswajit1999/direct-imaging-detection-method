@@ -278,3 +278,18 @@ figures/                         generated plot + summary_statistics.csv
 ## Author
 
 Biswajit Jana — [Portfolio](https://biswajit1999.github.io/Biswajit_Jana.github.io/) · [GitHub](https://github.com/Biswajit1999) · [LinkedIn](https://www.linkedin.com/in/biswajit-jana-27011a151/) · [ORCID](https://orcid.org/0009-0002-2411-1891)
+
+## Research evidence and downloads
+
+- [Download the machine-readable table profiles](evidence/table-profiles.json) for 1 archived tables. Open `table-evidence.html` from the checkout for the coverage chart.
+- Start with [Summary statistics](figures/summary_statistics.csv).
+- [View Adi recovery](figures/adi_recovery.png).
+
+Run these commands from the repository root to rebuild the published evidence.
+
+```sh
+python scripts/evidence_catalog.py
+python scripts/render_evidence_page.py
+python scripts/profile_evidence_tables.py
+python scripts/render_table_profiles.py
+```
