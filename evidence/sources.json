@@ -1,0 +1,16 @@
+{
+  "project": "Direct Imaging — Exoplanet Detection Method",
+  "repository": "https://github.com/Biswajit1999/direct-imaging-detection-method",
+  "files": [
+    {
+      "label": "Summary statistics",
+      "path": "figures/summary_statistics.csv",
+      "role": "Tables and numerical results"
+    },
+    {
+      "label": "Adi recovery",
+      "path": "figures/adi_recovery.png",
+      "role": "Figures"
+    }
+  ]
+}
